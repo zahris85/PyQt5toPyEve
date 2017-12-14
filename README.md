@@ -1,6 +1,6 @@
 # PyQt5toPyEve
 
-this demo use Eve-SQLAlchemy for The REST-API server
+this demo use Eve-SQLAlchemy for The server
 
 run the server first :
 ```bash
