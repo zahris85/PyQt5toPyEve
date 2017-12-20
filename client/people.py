@@ -1,15 +1,15 @@
-import sys, requests, json
+import requests, json
 from PyQt5.QtWidgets import (
-    QApplication, QWidget, QTableWidget, QTableWidgetItem,
+    QTableWidget, QTableWidgetItem,
     QVBoxLayout, QHBoxLayout, QComboBox, QLabel,
     QAbstractItemView, QLineEdit, QDialog, QPushButton,
-    QDesktopWidget, QMessageBox
+    QMessageBox
 )
 
 max_results = 10
 http = "http://127.0.0.1:5000/people"
 
-class people(QWidget):
+class people(QDialog):
     def __init__(self, parent=None):
         super(people, self).__init__(parent)
         self.initUI()
@@ -22,8 +22,6 @@ class people(QWidget):
         self.signals()
         self.setLayout(self.boxLayout())
         self.setFixedSize(254, 380)
-        self.center()
-        self.show()
 
     def boxLayout(self):
         hbox = QHBoxLayout()
@@ -172,15 +170,3 @@ class people(QWidget):
             err.setWindowTitle('Data Missmatch')
             err.buttonClicked.connect(self.closeEditDialog)
             err.exec()
-
-    def center(self):
-        qr = self.frameGeometry()
-        cp = QDesktopWidget().availableGeometry().center()
-        qr.moveCenter(cp)
-        self.move(qr.topLeft())
-
-
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    x = people()
-    sys.exit(app.exec_())
