@@ -154,4 +154,4 @@ CMakeLists.txt.user*
 
 
 client/notmain.py
-.idea
+.idea/
