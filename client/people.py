@@ -38,22 +38,6 @@ class people(QDialog):
         vbox.addWidget(self.tview)
         return vbox
 
-    def signals(self):
-        self.pageNum.activated.connect(self.tablePage)
-        self.firstName.textChanged.connect(self.filterName)
-        self.lastName.textChanged.connect(self.filterName)
-        self.tview.cellDoubleClicked.connect(self.editRow)
-
-    def editRow(self, row):
-        id = (self.tview.verticalHeaderItem(row).text())
-        data = requests.get(http + '/' + id).json()
-        self.editRowDialog(data)
-
-    def tablePage(self):
-        z = self.pageNum.currentData()
-        self.filterName(z)
-        self.pageNum.setCurrentIndex(z - 1)
-
     def tableView(self):
         self.tview = QTableWidget()
         self.tview.setSelectionBehavior(QAbstractItemView.SelectRows)
@@ -61,6 +45,17 @@ class people(QDialog):
         self.tview.setColumnCount(2)
         self.tview.setHorizontalHeaderItem(0, QTableWidgetItem("Firstname"))
         self.tview.setHorizontalHeaderItem(1, QTableWidgetItem("Lastname"))
+
+    def signals(self):
+        self.pageNum.activated.connect(self.tablePage)
+        self.firstName.textChanged.connect(self.filterName)
+        self.lastName.textChanged.connect(self.filterName)
+        self.tview.cellDoubleClicked.connect(self.editRow)
+
+    def tablePage(self):
+        z = self.pageNum.currentData()
+        self.filterName(z)
+        self.pageNum.setCurrentIndex(z - 1)
 
     def genTable(self, JsonData):
         self.pageCount(JsonData)
@@ -108,60 +103,59 @@ class people(QDialog):
             self.tview.setItem(row, 1, QTableWidgetItem(list['lastname']))
             row += 1
 
+    def editRow(self, row):
+        id = (self.tview.verticalHeaderItem(row).text())
+        data = requests.get(http + '/' + id).json()
+        self.editDialogUI(data)
 
-# class tableEdit(QDialog):
-#     def __init__(self, parent=None):
-#         super(tableEdit, self).__init__(parent)
-#         self.editRowDialog
+    def editDialogUI(self, JsonData):
+        self.editDialog = QDialog()
+        self.editDialog.setWindowTitle('Edit ID No. %s' % JsonData['id'])
+        self.editDialog.setLayout(self.inputBox(JsonData))
+        self.connectors(JsonData)
+        self.editDialog.exec()
 
-    def editRowDialog(self, JsonData):
+    def connectors(self, JsonData):
         url = http + '/%s' % JsonData['id']
         headers = {
             "Content-Type": "application/json",
             "If-Match": JsonData['_etag']
         }
-
-        self.editDialog = QDialog()
-        self.editDialog.setWindowTitle('Edit ID No. %s' % JsonData['id'])
-
-        editSavButton = QPushButton('SAVE', self.editDialog)
-        editDelButton = QPushButton('DELETE', self.editDialog)
-
-        editSavButton.clicked.connect(lambda: self.edit(
+        self.editSavButton.clicked.connect(lambda: self.edit(
             JsonData['id'], JsonData['_etag'], url, headers,
-            editFirstname.text(), editLastname.text()
+            self.editFirstname.text(), self.editLastname.text()
         ))
-        editDelButton.clicked.connect(lambda: self.delete(url, headers))
+        self.editDelButton.clicked.connect(lambda: self.delete(url, headers))
 
+    def inputButton(self):
+        self.editSavButton = QPushButton('SAVE')
+        self.editDelButton = QPushButton('DELETE')
         buttonGroup = QHBoxLayout()
-        buttonGroup.addWidget(editDelButton)
-        buttonGroup.addWidget(editSavButton)
+        buttonGroup.addWidget(self.editDelButton)
+        buttonGroup.addWidget(self.editSavButton)
+        return buttonGroup
 
-        editFirstname = QLineEdit(JsonData['firstname'])
-        editLastname = QLineEdit(JsonData['lastname'])
+    def inputBox(self, JsonData):
+        self.editFirstname = QLineEdit(JsonData['firstname'])
+        self.editLastname = QLineEdit(JsonData['lastname'])
 
         firstname = QHBoxLayout()
         firstname.addWidget(QLabel('Firstname :'))
-        firstname.addWidget(editFirstname)
+        firstname.addWidget(self.editFirstname)
 
         lastname = QHBoxLayout()
         lastname.addWidget(QLabel('Lastname :'))
-        lastname.addWidget(editLastname)
-
-        inputGroup = QVBoxLayout()
-        inputGroup.addLayout(firstname)
-        inputGroup.addLayout(lastname)
+        lastname.addWidget(self.editLastname)
 
         editGroup = QVBoxLayout()
-        editGroup.addLayout(inputGroup)
-        editGroup.addLayout(buttonGroup)
-
-        self.editDialog.setLayout(editGroup)
-        self.editDialog.exec()
+        editGroup.addLayout(firstname)
+        editGroup.addLayout(lastname)
+        editGroup.addLayout(self.inputButton())
+        return editGroup
 
     def closeEditDialog(self):
         self.editDialog.close()
-        self.tablePage()
+        people.tablePage(self)
 
     def delete(self, url, headers):
         requests.delete(url, headers=headers)

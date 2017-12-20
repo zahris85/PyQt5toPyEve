@@ -19,10 +19,10 @@ class main(QMainWindow):
 
     def clickopen(self):
         self.dialog = people(self)
-        self.dialog.show()
+        self.dialog.exec()
 
     def center(self):
-        self.setFixedSize(254, 380)
+        self.setFixedSize(800, 600)
         qr = self.frameGeometry()
         cp = QDesktopWidget().availableGeometry().center()
         qr.moveCenter(cp)
