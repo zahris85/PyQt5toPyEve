@@ -115,7 +115,7 @@ class people(QDialog):
         editSavButton = QPushButton('SAVE', self.editDialog)
         editDelButton = QPushButton('DELETE', self.editDialog)
 
-        editSavButton.clicked.connect(lambda: self.save(
+        editSavButton.clicked.connect(lambda: self.edit(
             JsonData['id'], JsonData['_etag'], url, headers, editFirstname.text(), editLastname.text()
         ))
         editDelButton.clicked.connect(lambda: self.delete(url, headers))
@@ -154,7 +154,7 @@ class people(QDialog):
         e = requests.delete(url, headers=headers)
         self.closeEditDialog()
 
-    def save(self, id, etag, url, headers, firstname, lastname):
+    def edit(self, id, etag, url, headers, firstname, lastname):
         currentEtag = requests.get(http + '/%s' % id).json()['_etag']
         if currentEtag == etag:
             i = json.dumps({'firstname': firstname, 'lastname': lastname})

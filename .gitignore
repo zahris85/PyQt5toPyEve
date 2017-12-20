@@ -153,3 +153,5 @@ target_wrapper.*
 CMakeLists.txt.user*
 
 
+client/notmain.py
+.idea

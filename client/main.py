@@ -7,15 +7,17 @@ class main(QWidget):
         super(main, self).__init__(parent)
         self.initUI()
         self.center()
+        self.show()
 
     def initUI(self):
         self.center()
         button = QPushButton('open', self)
         button.clicked.connect(self.clickopen)
-        self.dialog = people(self)
+
 
     def clickopen(self):
-        self.dialog.exec_()
+        self.dialog = people(self)
+        self.dialog.exec()
 
     def center(self):
         self.setFixedSize(254, 380)
@@ -27,5 +29,4 @@ class main(QWidget):
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     x = main()
-    x.show()
     sys.exit(app.exec_())
