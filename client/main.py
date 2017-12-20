@@ -1,8 +1,11 @@
 import sys
-from PyQt5.QtWidgets import QWidget, QPushButton, QApplication, QDesktopWidget
+from PyQt5.QtWidgets import (
+    QPushButton, QApplication, QDesktopWidget, QMainWindow
+)
 from people import people
 
-class main(QWidget):
+
+class main(QMainWindow):
     def __init__(self, parent=None):
         super(main, self).__init__(parent)
         self.initUI()
@@ -14,10 +17,9 @@ class main(QWidget):
         button = QPushButton('open', self)
         button.clicked.connect(self.clickopen)
 
-
     def clickopen(self):
         self.dialog = people(self)
-        self.dialog.exec()
+        self.dialog.show()
 
     def center(self):
         self.setFixedSize(254, 380)
@@ -25,6 +27,7 @@ class main(QWidget):
         cp = QDesktopWidget().availableGeometry().center()
         qr.moveCenter(cp)
         self.move(qr.topLeft())
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

@@ -1,4 +1,5 @@
-import requests, json
+import requests
+import json
 from PyQt5.QtWidgets import (
     QTableWidget, QTableWidgetItem,
     QVBoxLayout, QHBoxLayout, QComboBox, QLabel,
@@ -8,6 +9,7 @@ from PyQt5.QtWidgets import (
 
 max_results = 10
 http = "http://127.0.0.1:5000/people"
+
 
 class people(QDialog):
     def __init__(self, parent=None):
@@ -100,14 +102,24 @@ class people(QDialog):
     def renderTable(self, JsonData):
         row = 0
         for list in JsonData['_items']:
-            self.tview.setVerticalHeaderItem(row, QTableWidgetItem(str(list["id"])))
+            self.tview.setVerticalHeaderItem(
+                row, QTableWidgetItem(str(list["id"])))
             self.tview.setItem(row, 0, QTableWidgetItem(list['firstname']))
             self.tview.setItem(row, 1, QTableWidgetItem(list['lastname']))
             row += 1
 
+
+# class tableEdit(QDialog):
+#     def __init__(self, parent=None):
+#         super(tableEdit, self).__init__(parent)
+#         self.editRowDialog
+
     def editRowDialog(self, JsonData):
         url = http + '/%s' % JsonData['id']
-        headers = {"Content-Type": "application/json", "If-Match": JsonData['_etag']}
+        headers = {
+            "Content-Type": "application/json",
+            "If-Match": JsonData['_etag']
+        }
 
         self.editDialog = QDialog()
         self.editDialog.setWindowTitle('Edit ID No. %s' % JsonData['id'])
@@ -116,7 +128,8 @@ class people(QDialog):
         editDelButton = QPushButton('DELETE', self.editDialog)
 
         editSavButton.clicked.connect(lambda: self.edit(
-            JsonData['id'], JsonData['_etag'], url, headers, editFirstname.text(), editLastname.text()
+            JsonData['id'], JsonData['_etag'], url, headers,
+            editFirstname.text(), editLastname.text()
         ))
         editDelButton.clicked.connect(lambda: self.delete(url, headers))
 
@@ -151,14 +164,14 @@ class people(QDialog):
         self.tablePage()
 
     def delete(self, url, headers):
-        e = requests.delete(url, headers=headers)
+        requests.delete(url, headers=headers)
         self.closeEditDialog()
 
     def edit(self, id, etag, url, headers, firstname, lastname):
         currentEtag = requests.get(http + '/%s' % id).json()['_etag']
         if currentEtag == etag:
             i = json.dumps({'firstname': firstname, 'lastname': lastname})
-            e = requests.patch(url, data=i, headers=headers)
+            requests.patch(url, data=i, headers=headers)
             self.closeEditDialog()
         else:
             err = QMessageBox()
