@@ -2,7 +2,7 @@ import sys
 from PyQt5.QtWidgets import (
     QPushButton, QApplication, QDesktopWidget, QMainWindow
 )
-from people import people
+import people
 
 
 class main(QMainWindow):
@@ -18,7 +18,7 @@ class main(QMainWindow):
         button.clicked.connect(self.clickopen)
 
     def clickopen(self):
-        self.dialog = people(self)
+        self.dialog = people.people(self)
         self.dialog.exec()
 
     def center(self):

@@ -1,10 +1,9 @@
 import requests
 import json
 from PyQt5.QtWidgets import (
-    QTableWidget, QTableWidgetItem,
+    QTableWidget, QTableWidgetItem, QMessageBox,
     QVBoxLayout, QHBoxLayout, QComboBox, QLabel,
     QAbstractItemView, QLineEdit, QDialog, QPushButton,
-    QMessageBox
 )
 
 max_results = 10
@@ -18,8 +17,7 @@ class people(QDialog):
 
     def initUI(self):
         self.tableView()
-        self.paginate()
-        self.searchBoxes()
+        self.controlBoxes()
         self.filterName(1)
         self.signals()
         self.setLayout(self.boxLayout())
@@ -46,29 +44,11 @@ class people(QDialog):
         self.tview.setHorizontalHeaderItem(0, QTableWidgetItem("Firstname"))
         self.tview.setHorizontalHeaderItem(1, QTableWidgetItem("Lastname"))
 
-    def signals(self):
-        self.pageNum.activated.connect(self.tablePage)
-        self.firstName.textChanged.connect(self.filterName)
-        self.lastName.textChanged.connect(self.filterName)
-        self.tview.cellDoubleClicked.connect(self.editRow)
-
-    def tablePage(self):
-        z = self.pageNum.currentData()
-        self.filterName(z)
-        self.pageNum.setCurrentIndex(z - 1)
-
-    def genTable(self, JsonData):
-        self.pageCount(JsonData)
-        self.tview.setRowCount(len(JsonData['_items']))
-        self.renderTable(JsonData)
-
-    def paginate(self):
+    def controlBoxes(self):
         self.pageNum = QComboBox()
-
-    def searchBoxes(self):
         self.firstName = QLineEdit()
-        self.lastName = QLineEdit()
         self.firstName.setPlaceholderText("FIRSTNAME")
+        self.lastName = QLineEdit()
         self.lastName.setPlaceholderText("LASTNAME")
 
     def filterName(self, pageNum):
@@ -83,15 +63,37 @@ class people(QDialog):
 
         self.genTable(requests.get(url, params=par).json())
 
-    def pageCount(self, JsonData):
+    def signals(self):
+        self.pageNum.activated.connect(self.tablePage)
+        self.firstName.textChanged.connect(self.filterName)
+        self.lastName.textChanged.connect(self.filterName)
+        self.tview.cellDoubleClicked.connect(self.editRow)
+
+    def tablePage(self):
+        pageNum = self.pageNum.currentData()
+        self.filterName(pageNum)
+        self.pageNum.setCurrentIndex(pageNum - 1)
+
+    def genTable(self, JsonData):
+        self.pageCount(JsonData)
+        rows = len(JsonData['_items'])
+        if rows == 0:
+            self.filterName(JsonData['_meta']['page'] - 1)
+        else:
+            self.tview.setRowCount(rows)
+            self.renderTable(JsonData)
+
+    def totalPages(self, JsonData):
         total = JsonData['_meta']['total']
         if total % max_results > 0:
             pages = (total / max_results) + 2
         else:
             pages = total / max_results + 1
+        return pages
 
+    def pageCount(self, JsonData):
         self.pageNum.clear()
-        for i in range(1, int(pages)):
+        for i in range(1, int(self.totalPages(JsonData))):
             self.pageNum.addItem("%s" % i, i)
 
     def renderTable(self, JsonData):
@@ -112,10 +114,10 @@ class people(QDialog):
         self.editDialog = QDialog()
         self.editDialog.setWindowTitle('Edit ID No. %s' % JsonData['id'])
         self.editDialog.setLayout(self.inputBox(JsonData))
-        self.connectors(JsonData)
+        self.editConn(JsonData)
         self.editDialog.exec()
 
-    def connectors(self, JsonData):
+    def editConn(self, JsonData):
         url = http + '/%s' % JsonData['id']
         headers = {
             "Content-Type": "application/json",
@@ -155,7 +157,7 @@ class people(QDialog):
 
     def closeEditDialog(self):
         self.editDialog.close()
-        people.tablePage(self)
+        self.tablePage()
 
     def delete(self, url, headers):
         requests.delete(url, headers=headers)
