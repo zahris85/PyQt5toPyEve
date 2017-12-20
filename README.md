@@ -9,6 +9,6 @@ python server/app.py
 
 then the client
 ```bash
-python client/people.py
+python client/main.py
 ```
 
